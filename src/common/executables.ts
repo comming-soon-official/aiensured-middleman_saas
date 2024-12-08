@@ -6,6 +6,11 @@ import {
     RunImagePipelineCommand,
     RunStructuredPipelineCommand
 } from '../constant/paths'
+import {
+    attachProcessHandlers,
+    createChildProcess,
+    createProcessPromise
+} from './processHandler'
 
 export const executeCommand = async (command: string) => {
     return new Promise((resolve, reject) => {
@@ -43,45 +48,16 @@ export const RunPipeline = async ({
     const config = pipelineConfig[pipeline] || pipelineConfig.structured
 
     try {
-        const child = exec(config.command)
+        const child = createChildProcess(config.command)
+        attachProcessHandlers(child)
 
-        const handleOutput = (data: string, type: 'stdout' | 'stderr') => {
-            const logMethod = type === 'stdout' ? console.log : console.error
-            logMethod(`${type} on Running Pipeline:`, data)
+        const successCallback = async () => {
+            await fs.promises.access(config.jsonPath, fs.constants.F_OK)
         }
 
-        child.stdout?.on('data', (data) =>
-            handleOutput(data.toString(), 'stdout')
-        )
-        child.stderr?.on('data', (data) =>
-            handleOutput(data.toString(), 'stderr')
-        )
-
-        return new Promise((resolve, reject) => {
-            child.on('exit', async (code) => {
-                console.log('Exit Code:', code)
-
-                if (code !== 0) {
-                    // await handlePipelineFailure(projectId, instanceId)
-                    return reject(
-                        new Error(`Pipeline exited with code ${code}`)
-                    )
-                }
-
-                try {
-                    await fs.promises.access(config.jsonPath, fs.constants.F_OK)
-                    // await uploadToS3(projectId, instanceId, pipeline)
-                    resolve(true)
-                } catch (error) {
-                    console.error('Upload failed:', error)
-                    // await handlePipelineFailure(projectId, instanceId)
-                    reject(error)
-                }
-            })
-        })
+        return createProcessPromise(child, successCallback)
     } catch (error) {
         console.error('Error in RunPipeline:', error)
-        // await handlePipelineFailure(projectId, instanceId)
         throw error
     }
 }

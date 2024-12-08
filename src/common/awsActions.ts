@@ -1,8 +1,12 @@
-import { exec } from 'child_process'
 import { v4 as uuidv4 } from 'uuid'
 
 import { PIPELINE_PATH } from '../constant/paths'
 import { executeCommand } from './executables'
+import {
+    attachProcessHandlers,
+    createChildProcess,
+    createProcessPromise
+} from './processHandler'
 import { UploadS3Types } from './types'
 
 export const uploadToS3 = async ({ pipeline, app }: UploadS3Types) => {
@@ -43,27 +47,16 @@ const uploadResults = async (
     sourceFolder: string,
     destPath: string
 ): Promise<void> => {
-    return new Promise((resolve, reject) => {
-        const awsCliCommand = `aws s3 sync ${sourceFolder} ${destPath}`
-        const child = exec(awsCliCommand)
+    const awsCliCommand = `aws s3 sync ${sourceFolder} ${destPath}`
+    const child = createChildProcess(awsCliCommand)
 
-        child.stdout?.on('data', (data) => {
+    attachProcessHandlers(child, (data, type) => {
+        if (type === 'stdout') {
             console.log('Upload progress:', data)
-        })
-
-        child.stderr?.on('data', (data) => {
+        } else {
             console.error('Upload error:', data)
-        })
-
-        child.on('exit', (code) => {
-            if (code === 0) {
-                console.log('Upload completed successfully')
-                resolve()
-            } else {
-                const error = new Error(`Upload failed with exit code ${code}`)
-                console.error(error)
-                reject(error)
-            }
-        })
+        }
     })
+
+    await createProcessPromise(child)
 }
