@@ -2,9 +2,11 @@
 import { execSync } from 'child_process'
 import { Request, Response } from 'express'
 import fs from 'fs'
+import { chdir } from 'process'
 
 import { downloadModel } from '../../common/downloadOps'
 import { RunPipeline } from '../../common/executables'
+import { PIPELINE_PATH } from '../../constant/paths'
 import { ImagePipelineTypes } from './types'
 
 export const runImage = async (req: Request, res: Response) => {
@@ -18,6 +20,9 @@ export const runImage = async (req: Request, res: Response) => {
                 message: 'Invalid pipeline type. Expected "image"'
             })
         }
+
+        //Changing to Pipelines Directory
+        chdir(PIPELINE_PATH)
 
         // Download dataset and model
         await downloadImageDataset({ dataset })

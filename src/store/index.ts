@@ -3,8 +3,8 @@ type GlobalStore = {
     projectId?: string
     instanceId?: string
     credits?: number
+    ipAddress?: string
 }
-
 const store: GlobalStore = {}
 
 // Function to set values in the store using generics
@@ -22,14 +22,10 @@ export const getStore = <T extends keyof GlobalStore>(
     return store[key]
 }
 
-export const settingStore = (
-    projectId: string,
-    userId: string,
-    instanceId: string,
-    credits: number
-) => {
-    if (projectId) setStore('projectId', projectId)
-    if (instanceId) setStore('instanceId', instanceId)
-    if (userId) setStore('userId', userId)
-    setStore('credits', credits)
+export const settingStore = (store: GlobalStore) => {
+    if (store.projectId) setStore('projectId', store.projectId)
+    if (store.instanceId) setStore('instanceId', store.instanceId)
+    if (store.userId) setStore('userId', store.userId)
+    if (store.credits) setStore('credits', store.credits)
+    if (store.ipAddress) setStore('ipAddress', store.ipAddress)
 }

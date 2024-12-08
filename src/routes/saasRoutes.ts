@@ -12,9 +12,15 @@ router.get('/', (req: Request, res: Response) => {
 })
 
 router.post('/run-pipeline', (req: Request, res: Response) => {
-    const { pipeline, projectId, userId, instanceId } = req.body
+    const { pipeline, projectId, userId, instanceId, ipAddress } = req.body
 
-    settingStore(projectId, userId, instanceId, 2)
+    settingStore({
+        projectId,
+        userId,
+        instanceId,
+        ipAddress,
+        credits: 2
+    })
     try {
         switch (pipeline) {
             case 'image':
