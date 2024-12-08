@@ -25,6 +25,7 @@ export const terminateInstance = () => {
     console.warn('System is about to terminate')
 }
 export const sendFailedStatus = async () => {
+    //TODO: include detialed response on where its failed
     const data = {
         status: 'error',
         projectId: getStore('projectId')
