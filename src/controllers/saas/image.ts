@@ -7,6 +7,7 @@ import { chdir } from 'process'
 import { downloadModel } from '../../common/downloadOps'
 import { RunPipeline } from '../../common/executables'
 import { PIPELINE_PATH } from '../../constant/paths'
+import { handleFailure } from '../../services/api-actions'
 import { ImagePipelineTypes } from './types'
 
 export const runImage = async (req: Request, res: Response) => {
@@ -28,14 +29,16 @@ export const runImage = async (req: Request, res: Response) => {
         await downloadImageDataset({ dataset })
         await downloadModel({ url: dataset, pipeline })
 
-        // Run Pipeline
-        RunPipeline({ pipeline })
+        await RunPipeline({ pipeline })
         return res.status(200).json({
             success: true,
             message: 'Image pipeline executed successfully'
         })
     } catch (error) {
         console.error('Error in image pipeline:', error)
+        await handleFailure({
+            reason: `Error in image pipeline: ${error}`
+        })
         return res.status(500).json({
             success: false,
             message: 'Internal server error',
@@ -44,11 +47,6 @@ export const runImage = async (req: Request, res: Response) => {
     }
 }
 
-type Dataset = {
-    [className: string]: {
-        Uris: string[]
-    }
-}
 export const downloadImageDataset = async ({
     dataset
 }: {
@@ -58,7 +56,7 @@ export const downloadImageDataset = async ({
     const ObjectDataset: Dataset = JSON.parse(dataset)
     try {
         if (!fs.existsSync(destPath)) {
-            fs.mkdirSync(destPath)
+            fs.mkdirSync(destPath, { recursive: true })
             console.log(`created parent directory ${destPath}`)
         }
         for (const [className, classData] of Object.entries(ObjectDataset)) {
@@ -82,7 +80,7 @@ export const downloadImageDataset = async ({
                     if (error instanceof Error) {
                         console.error(
                             `Error downloading image from ${imageUrl}:`,
-                            error.message
+                            error instanceof Error ? error.message : error
                         )
                     } else {
                         console.error('An unknown error occurred:', error)
@@ -93,7 +91,10 @@ export const downloadImageDataset = async ({
         createLabelFile(Object.keys(ObjectDataset))
     } catch (error) {
         console.error('Error in downloadAndUnzipDataset:', error)
-        // await handleFailure(id, instanceId)
+        await handleFailure({
+            reason: `Error in downloadAndUnzipDataset: ${error}`
+        })
+        throw error // Re-throw to handle in parent
     }
 }
 
@@ -108,5 +109,12 @@ export const createLabelFile = (labels: string[]) => {
         console.log('File created and data written successfully!')
     } catch (error) {
         console.error('An error occurred:', error)
+    }
+}
+
+//Types
+type Dataset = {
+    [className: string]: {
+        Uris: string[]
     }
 }

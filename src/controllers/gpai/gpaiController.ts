@@ -1,19 +1,18 @@
 import { Request, Response } from "express";
 import { chdir } from "process";
 import { PIPELINE_PATH } from "../../constant/paths";
-import { StructuredPipelineTypes } from "./types";
 import { handleFailure } from "../../services/api-actions";
 import { downloadDataset, downloadModel } from "../../common/downloadOps";
 import { setConfigs } from "../../common/setConfigs";
 import { RunPipeline } from "../../common/executables";
+import { GpaiBiasTypes } from "./types";
 
-export const runStructured = async (req: Request, res: Response) => {
+export const runGpai = async (req: Request, res: Response) => {
   try {
-    const { dataset, pipeline, columnInput } =
-      req.body as StructuredPipelineTypes;
+    const { dataset, app, columnInput } = req.body as GpaiBiasTypes;
 
     // Validate pipeline type
-    if (pipeline !== "structured") {
+    if (app !== "gpai") {
       return res.status(400).json({
         success: false,
         message: 'Invalid pipeline type. Expected "structured"',
@@ -25,11 +24,14 @@ export const runStructured = async (req: Request, res: Response) => {
 
     // Download dataset and model
     await downloadDataset({ url: dataset });
-    await setConfigs({ pipeline, colInput: JSON.stringify(columnInput) });
+    await setConfigs({
+      pipeline: "structured",
+      colInput: JSON.stringify(columnInput),
+    });
 
-    await downloadModel({ url: dataset, pipeline });
+    await downloadModel({ url: dataset, pipeline: "structured" });
 
-    await RunPipeline({ pipeline });
+    await RunPipeline({ pipeline: "structured" });
     return res.status(200).json({
       success: true,
       message: "Image pipeline executed successfully",
