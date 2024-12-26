@@ -7,12 +7,12 @@ export const saveResultsInfo = async (uuid: string) => {
         console.log('SystemTerminated')
     } catch (error) {
         console.error('Error in saveResultsInfo:', error)
-        await handleFailure()
+        await handleFailure({ reason: `Error in saveResultsInfo ${error}` })
         console.log('SystemTerminated')
     }
 }
 
-export const handleFailure = async () => {
-    await sendFailedStatus()
+export const handleFailure = async ({ reason }: { reason: string }) => {
+    await sendFailedStatus({ reason: reason })
     await terminateInstance()
 }

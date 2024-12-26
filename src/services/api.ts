@@ -2,6 +2,7 @@ import axios from 'axios'
 
 import { API_URL_HEAD, AwsS3ResultsPath } from '../constant/paths'
 import { getStore } from '../store'
+import { handleFailure } from './api-actions'
 
 export const terminateInstance = () => {
     const data = { instanceId: getStore('instanceId') }
@@ -24,10 +25,10 @@ export const terminateInstance = () => {
     setTimeout(makeAPICall, 60_000) //wait for 60seconds
     console.warn('System is about to terminate')
 }
-export const sendFailedStatus = async () => {
-    //TODO: include detialed response on where its failed
+export const sendFailedStatus = async ({ reason }: { reason: string }) => {
     const data = {
         status: 'error',
+        reason: reason,
         projectId: getStore('projectId')
     }
 
@@ -45,8 +46,10 @@ export const sendFailedStatus = async () => {
         )
         console.log('Run API Response:', response.data)
     } catch (error) {
-        console.error('Error sending success status:', error)
-        // Handle the error appropriately
+        console.error('Error sending Failure status:', error)
+        await handleFailure({
+            reason: `Error sending Failure status: ${error}`
+        })
     }
 }
 
@@ -72,7 +75,9 @@ export const sendSuccessStatus = async (uuid: string) => {
         console.log('Run API Response:', response.data)
     } catch (error) {
         console.error('Error sending success status:', error)
-        // Handle the error appropriately
+        await handleFailure({
+            reason: `Error sending success status: ${error}`
+        })
     }
 }
 
@@ -120,7 +125,10 @@ export const reduceCredits = async () => {
             }
         )
         console.log('Reduce API Response:', response.data)
-    } catch {
+    } catch (error) {
         console.log('Error in reduceCredits')
+        await handleFailure({
+            reason: `Error in reduceCredits: ${error}`
+        })
     }
 }

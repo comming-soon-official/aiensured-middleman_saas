@@ -4,6 +4,6 @@ export type DownloadModelTypes = {
 }
 
 export type UploadS3Types = {
-    app: 'saas' | 'gpai'
+    app?: 'saas' | 'gpai'
     pipeline: 'image' | 'structured'
 }
