@@ -1,34 +1,43 @@
 type GlobalStore = {
-  userId?: string;
-  projectId?: string;
-  instanceId?: string;
-  credits?: number;
-  ipAddress?: string;
-  fileName?: string;
-};
+    userId?: string
+    projectId?: string
+    instanceId?: string
+    credits?: number
+    ipAddress?: string
+    fileName?: string
+}
 
-const store: GlobalStore = {};
+const store: GlobalStore = {}
 
 // Function to set values in the store using generics
 export const setStore = <T extends keyof GlobalStore>(
-  key: T,
-  value: GlobalStore[T]
+    key: T,
+    value: GlobalStore[T]
 ) => {
-  store[key] = value;
-};
+    store[key] = value
+}
 
 // Function to get values from the store using generics
 export const getStore = <T extends keyof GlobalStore>(
-  key: T
+    key: T
 ): GlobalStore[T] => {
-  return store[key];
-};
+    return store[key]
+}
 
-export const settingStore = (store: GlobalStore) => {
-  if (store.projectId) setStore("projectId", store.projectId);
-  if (store.instanceId) setStore("instanceId", store.instanceId);
-  if (store.userId) setStore("userId", store.userId);
-  if (store.credits) setStore("credits", store.credits);
-  if (store.ipAddress) setStore("ipAddress", store.ipAddress);
-  if (store.fileName) setStore("fileName", store.fileName);
-};
+export const settingStore = (storeData: GlobalStore) => {
+    if (!storeData) {
+        throw new Error('Store data cannot be null or undefined')
+    }
+
+    // Validate critical fields
+    if (!storeData.projectId || !storeData.userId) {
+        throw new Error('projectId and userId are required')
+    }
+
+    if (storeData.projectId) setStore('projectId', storeData.projectId)
+    if (storeData.instanceId) setStore('instanceId', storeData.instanceId)
+    if (storeData.userId) setStore('userId', storeData.userId)
+    if (storeData.credits) setStore('credits', storeData.credits)
+    if (storeData.ipAddress) setStore('ipAddress', storeData.ipAddress)
+    if (storeData.fileName) setStore('fileName', storeData.fileName)
+}
