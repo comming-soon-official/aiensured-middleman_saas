@@ -32,8 +32,10 @@ export const executeCommand = async (command: string) => {
 
 export const RunPipeline = async ({
   pipeline,
+  app = "saas",
 }: {
   pipeline: "image" | "structured";
+  app?: "saas" | "gpai";
 }) => {
   const pipelineConfig = {
     image: {
@@ -44,13 +46,12 @@ export const RunPipeline = async ({
       command: RunStructuredPipelineCommand,
       jsonPath: `${PIPELINE_PATH}/results/json_metadata.json`,
     },
-    gpai: {
-      command: RunStructuredPipelineCommand,
-      jsonPath: `${PIPELINE_PATH}/results/json_metadata.json`,
-    },
   };
 
-  const config = pipelineConfig[pipeline] || pipelineConfig.structured;
+  const config = pipelineConfig[pipeline];
+  if (!config) {
+    throw new Error(`Invalid pipeline type: ${pipeline}`);
+  }
 
   try {
     const child = createChildProcess(config.command);
@@ -58,7 +59,7 @@ export const RunPipeline = async ({
 
     const successCallback = async () => {
       await fs.promises.access(config.jsonPath, fs.constants.F_OK);
-      await uploadToS3({ pipeline, app: "saas" });
+      await uploadToS3({ pipeline, app });
     };
 
     return createProcessPromise(child, successCallback);
