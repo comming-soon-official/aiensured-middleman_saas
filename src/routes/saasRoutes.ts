@@ -7,11 +7,11 @@ import { settingStore } from '../store'
 
 const router = express.Router()
 
-router.get('/', (req: Request, res: Response) => {
-    res.json({ message: 'Welcome to the API' })
-})
+// router.get('/', (req: Request, res: Response) => {
+//     res.json({ message: 'Welcome to the API' })
+// })
 
-router.post('/run', (req: Request, res: Response) => {
+router.post('/', (req: Request, res: Response) => {
     console.log('📥 Received request:', { body: req.body, path: req.path })
     const { pipeline, projectId, userId, instanceId, ipAddress } = req.body
 
