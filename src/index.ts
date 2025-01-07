@@ -1,4 +1,4 @@
-import express from 'express'
+import express, { Request, Response } from 'express'
 
 import gpaiRoutes from './routes/gpaiRoutes'
 import saasRouter from './routes/saasRoutes'
@@ -7,7 +7,16 @@ const app = express()
 app.use(express.json())
 const PORT = 3000
 
-app.use('/saas', saasRouter)
+app.use('/runimagepipeline', saasRouter)
+app.use('/runsrtucturedpipeline', saasRouter)
+
+app.get('/', (req: Request, res: Response) => {
+    res.send('Welcome to Middleman for Saas Product')
+})
+
+app.get('/healthcheck', (req, res) => {
+    res.send('passed')
+})
 
 app.use('/gpai', gpaiRoutes)
 
