@@ -21,7 +21,6 @@ export const runImage = async (req: Request, res: Response) => {
                 message: 'Invalid pipeline type. Expected "image"'
             })
         }
-
         //Changing to Pipelines Directory
         chdir(PIPELINE_PATH)
 
