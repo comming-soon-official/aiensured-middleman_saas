@@ -6,12 +6,29 @@ import { RunPipeline } from '../../common/executables'
 import { setConfigs } from '../../common/setConfigs'
 import { PIPELINE_PATH } from '../../constant/paths'
 import { handleFailure } from '../../services/api-actions'
+import { settingStore } from '../../store'
 import { StructuredPipelineTypes } from './types'
 
 export const runStructured = async (req: Request, res: Response) => {
     try {
-        const { dataset, pipeline, columnInput } =
-            req.body as StructuredPipelineTypes
+        const {
+            dataset,
+            pipeline,
+            columnInput,
+            projectId,
+            userId,
+            instanceId,
+            ipAddress
+        } = req.body as StructuredPipelineTypes
+
+        // First set up the store with required values
+        settingStore({
+            projectId,
+            userId,
+            instanceId,
+            ipAddress,
+            credits: 2
+        })
 
         // Validate pipeline type
         if (pipeline !== 'structured') {
@@ -33,10 +50,10 @@ export const runStructured = async (req: Request, res: Response) => {
         await RunPipeline({ pipeline })
         return res.status(200).json({
             success: true,
-            message: 'Structured pipeline executed successfully' // Was incorrectly saying "Image pipeline"
+            message: 'Structured pipeline executed successfully'
         })
     } catch (error) {
-        console.error('Error in image pipeline:', error)
+        console.error('Error in structured pipeline:', error)
         await handleFailure({
             reason: `Error in Structured pipeline: ${error}`
         })
