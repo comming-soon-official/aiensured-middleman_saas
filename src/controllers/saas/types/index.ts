@@ -1,26 +1,24 @@
 export type PipelineParamsTypes = {
-  projectId: string;
-  userId: string;
-  instanceId: string;
-  ipAddress: string;
-  pipeline: "image" | "structured";
-};
+    projectId: string
+    userId: string
+    instanceId: string
+    ipAddress: string
+    pipeline: 'image' | 'structured'
+}
 
 export type ImagePipelineTypes = PipelineParamsTypes & {
-  dataset: string;
-  model: string;
-  pipeline: "image";
-};
+    dataset: string
+    model: string
+    pipeline: 'image'
+}
 export type StructuredPipelineTypes = PipelineParamsTypes & {
-  dataset: string;
-  model: string;
-  pipeline: "structured";
-  columnInput: {
-    [key: string]: string;
-  };
-};
+    dataset: string
+    model: string
+    pipeline: 'structured'
+    columnInput: string
+}
 
 //Image Types
 export type DownloadImageDatasetTypes = {
-  dataset: string;
-};
+    dataset: string
+}

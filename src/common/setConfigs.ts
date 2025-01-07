@@ -8,42 +8,39 @@ export const setConfigs = async ({
     colInput
 }: {
     pipeline: string
-    colInput: { [key: string]: string }
+    colInput: string
 }) => {
     try {
-        const parsedColumns =
-            typeof colInput === 'string' ? JSON.parse(colInput) : colInput
+        // const parsedColumns =
+        //     typeof colInput === 'string' ? JSON.parse(colInput) : colInput
 
-        switch (pipeline) {
-            case 'structured':
-                if (!parsedColumns?.target) {
-                    await handleFailure({
-                        reason: `Invalid Column Input: ${colInput}`
-                    })
-                }
-                break
-            case 'gpai':
-                if (!parsedColumns?.target || !parsedColumns?.sensitive) {
-                    await handleFailure({
-                        reason: `Invalid Column Input: ${colInput}`
-                    })
-                }
-                break
-            default:
-                await handleFailure({
-                    reason: `Invalid Pipeline Type: ${pipeline}`
-                })
-        }
+        // switch (pipeline) {
+        //     case 'structured':
+        //         if (!colInput) {
+        //             await handleFailure({
+        //                 reason: `Invalid Column Input: ${colInput}`
+        //             })
+        //         }
+        //         break
+        //     case 'gpai':
+        //         if (!parsedColumns?.target || !parsedColumns?.sensitive) {
+        //             await handleFailure({
+        //                 reason: `Invalid Column Input: ${colInput}`
+        //             })
+        //         }
+        //         break
+        //     default:
+        //         await handleFailure({
+        //             reason: `Invalid Pipeline Type: ${pipeline}`
+        //         })
+        // }
         try {
             const configFilePath = 'config/master_config.properties'
             const properties = PropertiesReader(configFilePath)
             if (!properties) {
                 throw new Error('Failed to load configuration file')
             }
-            properties.set(
-                'target_column.target_column_name',
-                parsedColumns.target
-            )
+            properties.set('target_column.target_column_name', colInput)
             properties.set(
                 'dataset_path.data_path',
                 `datasets/${getStore('fileName')}`
