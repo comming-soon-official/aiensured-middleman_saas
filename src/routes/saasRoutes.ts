@@ -54,8 +54,12 @@ router.post('/', async (req: Request, res: Response) => {
     try {
         switch (pipeline) {
             case 'image':
+                console.log('inside image case')
+
                 return await runImage(req, res)
             case 'structured':
+                console.log('inside structured case')
+
                 return await runStructured(req, res)
             case 'object':
                 return await runObject(req, res)

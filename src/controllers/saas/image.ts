@@ -27,6 +27,7 @@ export const runImage = async (req: Request, res: Response) => {
         // Download dataset and model
         await downloadImageDataset({ dataset })
         await downloadModel({ url: dataset, pipeline })
+        console.log('About to run pipeline')
 
         await RunPipeline({ pipeline })
         return res.status(200).json({
