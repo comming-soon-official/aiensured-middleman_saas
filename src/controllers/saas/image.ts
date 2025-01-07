@@ -59,8 +59,12 @@ export const downloadImageDataset = async ({
 }) => {
     console.log('📥 Starting image dataset download')
     const destPath = './Dataset/data/'
-    const ObjectDataset: Dataset = JSON.parse(dataset)
+    const jsonData =
+        typeof dataset === 'string' ? dataset : JSON.stringify(dataset)
+    console.log('Data before parsing:', jsonData)
+
     try {
+        const ObjectDataset = JSON.parse(jsonData)
         console.log(
             '📊 Processing dataset structure:',
             Object.keys(ObjectDataset)
@@ -69,7 +73,10 @@ export const downloadImageDataset = async ({
             fs.mkdirSync(destPath, { recursive: true })
             console.log(`created parent directory ${destPath}`)
         }
-        for (const [className, classData] of Object.entries(ObjectDataset)) {
+        for (const [className, classData] of Object.entries(ObjectDataset) as [
+            string,
+            Dataset[string]
+        ][]) {
             const classFolder = `./Dataset/data/${className}`
 
             if (!fs.existsSync(classFolder)) {
@@ -101,10 +108,11 @@ export const downloadImageDataset = async ({
         createLabelFile(Object.keys(ObjectDataset))
     } catch (error) {
         console.error('❌ Dataset download failed:', error)
+        console.error('Attempted to parse:', jsonData)
         await handleFailure({
             reason: `Error in downloadAndUnzipDataset: ${error}`
         })
-        throw error // Re-throw to handle in parent
+        throw new Error(`Invalid JSON format: ${error}`)
     }
 }
 
