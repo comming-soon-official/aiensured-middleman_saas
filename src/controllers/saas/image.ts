@@ -11,6 +11,7 @@ import { handleFailure } from '../../services/api-actions'
 import { ImagePipelineTypes } from './types'
 
 export const runImage = async (req: Request, res: Response) => {
+    console.log('📸 Starting image pipeline processing')
     try {
         const { dataset, pipeline } = req.body as ImagePipelineTypes
 
@@ -21,21 +22,25 @@ export const runImage = async (req: Request, res: Response) => {
                 message: 'Invalid pipeline type. Expected "image"'
             })
         }
+
         //Changing to Pipelines Directory
+        console.log('📂 Changing directory to:', PIPELINE_PATH)
         chdir(PIPELINE_PATH)
 
         // Download dataset and model
+        console.log('⬇️ Starting dataset download')
         await downloadImageDataset({ dataset })
+        console.log('⬇️ Starting model download')
         await downloadModel({ url: dataset, pipeline })
-        console.log('About to run pipeline')
 
+        console.log('▶️ Executing pipeline')
         await RunPipeline({ pipeline })
         return res.status(200).json({
             success: true,
             message: 'Image pipeline executed successfully'
         })
     } catch (error) {
-        console.error('Error in image pipeline:', error)
+        console.error('❌ Image pipeline failed:', error)
         await handleFailure({
             reason: `Error in image pipeline: ${error}`
         })
@@ -52,9 +57,14 @@ export const downloadImageDataset = async ({
 }: {
     dataset: string
 }) => {
+    console.log('📥 Starting image dataset download')
     const destPath = './Dataset/data/'
     const ObjectDataset: Dataset = JSON.parse(dataset)
     try {
+        console.log(
+            '📊 Processing dataset structure:',
+            Object.keys(ObjectDataset)
+        )
         if (!fs.existsSync(destPath)) {
             fs.mkdirSync(destPath, { recursive: true })
             console.log(`created parent directory ${destPath}`)
@@ -90,7 +100,7 @@ export const downloadImageDataset = async ({
         }
         createLabelFile(Object.keys(ObjectDataset))
     } catch (error) {
-        console.error('Error in downloadAndUnzipDataset:', error)
+        console.error('❌ Dataset download failed:', error)
         await handleFailure({
             reason: `Error in downloadAndUnzipDataset: ${error}`
         })

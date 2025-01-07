@@ -11,6 +11,7 @@ export const downloadModel = async ({
     pipeline,
     app
 }: DownloadModelTypes) => {
+    console.log('⬇️ Starting model download:', { url, pipeline, app })
     const filename = path.basename(url)
     const fileExtension = path.extname(filename)
     const staticFilename = `model${fileExtension}`
@@ -29,6 +30,7 @@ export const downloadModel = async ({
     }
 
     try {
+        console.log(`📁 Creating directory: ${targetFolder}`)
         if (!fs.existsSync(targetFolder)) {
             fs.mkdirSync(targetFolder, { recursive: true })
         }
@@ -36,9 +38,9 @@ export const downloadModel = async ({
         await executeCommand(
             `curl -s ${url} --output ${targetFolder}/${staticFilename}`
         )
-        console.log('model downloaded')
+        console.log('✅ Model downloaded successfully')
     } catch (error) {
-        console.error('Error in downloadAndMoveModel:', error)
+        console.error('❌ Model download failed:', error)
         await handleFailure({
             reason: `Error in downloadAndMoveModel: ${error}`
         })
@@ -46,12 +48,14 @@ export const downloadModel = async ({
 }
 
 export const downloadDataset = async ({ url }: { url: string }) => {
+    console.log('⬇️ Starting dataset download:', url)
     const filename = path.basename(url)
     const fileExtension = path.extname(filename)
     const staticFilename = `dataset${fileExtension}`
     const targetFolder = './datasets'
 
     try {
+        console.log('📁 Creating dataset directory')
         settingStore({ fileName: staticFilename })
         if (!fs.existsSync(targetFolder)) {
             fs.mkdirSync(targetFolder, { recursive: true })
@@ -59,9 +63,9 @@ export const downloadDataset = async ({ url }: { url: string }) => {
         await executeCommand(
             `curl -s ${url} --output ${targetFolder}/${staticFilename}`
         )
-        console.log('dataset downloaded')
+        console.log('✅ Dataset downloaded successfully')
     } catch (error) {
-        console.error('Error on Downloading Datasets', error)
+        console.error('❌ Dataset download failed:', error)
         await handleFailure({
             reason: `Error in Downloading : ${error}`
         })

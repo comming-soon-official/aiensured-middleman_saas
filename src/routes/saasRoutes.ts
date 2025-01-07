@@ -3,47 +3,24 @@ import express, { Request, Response } from 'express'
 import { runImage } from '../controllers/saas/image'
 import { runObject } from '../controllers/saas/object'
 import { runStructured } from '../controllers/saas/structured'
-import { handleFailure } from '../services/api-actions'
 import { settingStore } from '../store'
 
 const router = express.Router()
 
-// router.get('/', (req: Request, res: Response) => {
-//     res.json({ message: 'Welcome to the API' })
-// })
+router.get('/', (req: Request, res: Response) => {
+    res.json({ message: 'Welcome to the API' })
+})
 
-router.post('/', async (req: Request, res: Response) => {
+router.post('/run', (req: Request, res: Response) => {
+    console.log('📥 Received request:', { body: req.body, path: req.path })
     const { pipeline, projectId, userId, instanceId, ipAddress } = req.body
-    let missingDatas = []
-    console.log('route called')
 
-    if (!pipeline) {
-        missingDatas.push('Pipeline')
-    }
-
-    if (!instanceId) {
-        missingDatas.push('instanceId')
-    }
-
-    if (!projectId) {
-        missingDatas.push('projectId')
-    }
-
-    if (!userId) {
-        missingDatas.push('userId')
-    }
-
-    if (!ipAddress) {
-        missingDatas.push('ipAddress')
-    }
-
-    if (missingDatas.length > 0) {
-        res.status(400).send(
-            `Missing required parameters: ${missingDatas.join(', ')}`
-        )
-        return
-    }
-
+    console.log('💾 Setting store with:', {
+        projectId,
+        userId,
+        instanceId,
+        ipAddress
+    })
     settingStore({
         projectId,
         userId,
@@ -52,31 +29,22 @@ router.post('/', async (req: Request, res: Response) => {
         credits: 2
     })
     try {
+        console.log(`🚀 Starting ${pipeline} pipeline`)
         switch (pipeline) {
             case 'image':
-                console.log('inside image case')
-
-                return await runImage(req, res)
+                return runImage(req, res)
             case 'structured':
-                console.log('inside structured case')
-
-                return await runStructured(req, res)
+                return runStructured(req, res)
             case 'object':
-                return await runObject(req, res)
+                return runObject(req, res)
             default:
-                await handleFailure({ reason: 'Invalid pipeline type' })
-                console.log('Invalid pipeline type')
-
                 return res.status(400).json({
                     success: false,
                     message: 'Invalid pipeline type'
                 })
         }
     } catch (error) {
-        console.log(`Internal server error: ${error}`)
-
-        await handleFailure({ reason: `Internal server error: ${error}` })
-
+        console.error('❌ Pipeline execution failed:', error)
         res.status(500).json({
             success: false,
             message: 'Internal server error',
