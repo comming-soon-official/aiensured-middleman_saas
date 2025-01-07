@@ -8,7 +8,7 @@ export const setConfigs = async ({
     colInput
 }: {
     pipeline: string
-    colInput: string
+    colInput: { [key: string]: string }
 }) => {
     try {
         const parsedColumns =
@@ -40,7 +40,10 @@ export const setConfigs = async ({
             if (!properties) {
                 throw new Error('Failed to load configuration file')
             }
-            properties.set('target_column.target_column_name', colInput)
+            properties.set(
+                'target_column.target_column_name',
+                parsedColumns.target
+            )
             properties.set(
                 'dataset_path.data_path',
                 `datasets/${getStore('fileName')}`
