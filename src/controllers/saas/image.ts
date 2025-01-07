@@ -13,7 +13,7 @@ import { ImagePipelineTypes } from './types'
 export const runImage = async (req: Request, res: Response) => {
     console.log('📸 Starting image pipeline processing')
     try {
-        const { dataset, pipeline } = req.body as ImagePipelineTypes
+        const { dataset, pipeline, model } = req.body as ImagePipelineTypes
 
         // Validate pipeline type
         if (pipeline !== 'image') {
@@ -31,7 +31,7 @@ export const runImage = async (req: Request, res: Response) => {
         console.log('⬇️ Starting dataset download')
         await downloadImageDataset({ dataset })
         console.log('⬇️ Starting model download')
-        await downloadModel({ url: dataset, pipeline })
+        await downloadModel({ url: model, pipeline, app: 'saas' })
 
         console.log('▶️ Executing pipeline')
         await RunPipeline({ pipeline })
