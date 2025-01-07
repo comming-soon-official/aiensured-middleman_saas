@@ -14,13 +14,38 @@ const router = express.Router()
 router.post('/', (req: Request, res: Response) => {
     console.log('📥 Received request:', { body: req.body, path: req.path })
     const { pipeline, projectId, userId, instanceId, ipAddress } = req.body
-
     console.log('💾 Setting store with:', {
         projectId,
         userId,
         instanceId,
         ipAddress
     })
+
+    let missing_data = []
+
+    if (!instanceId) {
+        missing_data.push('instanceId')
+    }
+
+    if (!projectId) {
+        missing_data.push('projectId')
+    }
+
+    if (!userId) {
+        missing_data.push('userId')
+    }
+
+    if (!ipAddress) {
+        missing_data.push('ipAddress')
+    }
+
+    if (missing_data.length > 0) {
+        res.status(400).send(
+            `Missing required parameters: ${missing_data.join(', ')}`
+        )
+        return
+    }
+
     settingStore({
         projectId,
         userId,

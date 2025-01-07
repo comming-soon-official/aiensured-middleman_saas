@@ -11,7 +11,7 @@ import { StructuredPipelineTypes } from './types'
 export const runStructured = async (req: Request, res: Response) => {
     console.log('🚀 Starting structured pipeline execution')
     try {
-        const { dataset, pipeline, columnInput } =
+        const { dataset, pipeline, columnInput, model } =
             req.body as StructuredPipelineTypes
         console.log('📥 Received request data:', {
             dataset,
@@ -43,7 +43,7 @@ export const runStructured = async (req: Request, res: Response) => {
         console.log('✅ Configurations set successfully')
 
         console.log('⏳ Starting model download...')
-        await downloadModel({ url: dataset, pipeline })
+        await downloadModel({ url: model, pipeline, app: 'saas' })
         console.log('✅ Model download completed')
 
         console.log('🔄 Executing pipeline...')

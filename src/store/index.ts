@@ -29,11 +29,6 @@ export const settingStore = (storeData: GlobalStore) => {
         throw new Error('Store data cannot be null or undefined')
     }
 
-    // Validate critical fields
-    if (!storeData.projectId || !storeData.userId) {
-        throw new Error('projectId and userId are required')
-    }
-
     if (storeData.projectId) setStore('projectId', storeData.projectId)
     if (storeData.instanceId) setStore('instanceId', storeData.instanceId)
     if (storeData.userId) setStore('userId', storeData.userId)
