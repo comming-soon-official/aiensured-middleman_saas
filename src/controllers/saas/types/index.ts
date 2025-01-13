@@ -15,7 +15,7 @@ export type StructuredPipelineTypes = PipelineParamsTypes & {
     dataset: string
     model: string
     pipeline: 'structured'
-    columnInput: string
+    colInput: string
 }
 
 //Image Types
