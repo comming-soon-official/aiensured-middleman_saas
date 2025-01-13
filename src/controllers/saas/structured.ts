@@ -11,12 +11,16 @@ import { StructuredPipelineTypes } from './types'
 export const runStructured = async (req: Request, res: Response) => {
     console.log('🚀 Starting structured pipeline execution')
     try {
-        const { dataset, pipeline, columnInput, model } =
-            req.body as StructuredPipelineTypes
+        const {
+            dataset,
+            pipeline,
+            columnInput: colInput,
+            model
+        } = req.body as StructuredPipelineTypes
         console.log('📥 Received request data:', {
             dataset,
             pipeline,
-            columnInput
+            columnInput: colInput
         })
 
         // Validate pipeline type
@@ -39,7 +43,7 @@ export const runStructured = async (req: Request, res: Response) => {
         console.log('✅ Dataset download completed')
 
         console.log('⚙️ Setting pipeline configurations...')
-        await setConfigs({ pipeline, colInput: columnInput })
+        await setConfigs({ pipeline, colInput: colInput })
         console.log('✅ Configurations set successfully')
 
         console.log('⏳ Starting model download...')
