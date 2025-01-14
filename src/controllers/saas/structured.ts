@@ -39,7 +39,7 @@ export const runStructured = async (req: Request, res: Response) => {
         console.log('✅ Dataset download completed')
 
         console.log('⚙️ Setting pipeline configurations...')
-        await setConfigs({ pipeline, colInput })
+        await setConfigs({ pipeline, colInput, app: 'gpai' })
         console.log('✅ Configurations set successfully')
 
         console.log('⏳ Starting model download...')
