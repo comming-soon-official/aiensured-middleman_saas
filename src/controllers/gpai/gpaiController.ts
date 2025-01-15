@@ -14,11 +14,11 @@ export const runGpai = async (req: Request, res: Response) => {
     console.log('Request body:', JSON.stringify(req.body, null, 2))
 
     try {
-        const { dataset, app, columnInput, model } = req.body as GpaiBiasTypes
+        const { dataset, app, colInput, model } = req.body as GpaiBiasTypes
         console.log('Extracted parameters:', {
             dataset,
             app,
-            columnInput,
+            colInput,
             model
         })
 
@@ -57,7 +57,7 @@ export const runGpai = async (req: Request, res: Response) => {
         console.log('Setting pipeline configurations...')
         await setConfigs({
             pipeline: 'gpai',
-            colInput: JSON.stringify(columnInput),
+            colInput: JSON.stringify(colInput),
             app: 'gpai'
         })
         console.log('Pipeline configurations set successfully')
