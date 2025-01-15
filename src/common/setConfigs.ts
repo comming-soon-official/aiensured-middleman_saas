@@ -15,7 +15,7 @@ const validateStructuredPipeline = (parsedColumns: ParsedColumnTypes) => {
 }
 
 const validateGpaiPipeline = (parsedColumns: ParsedColumnTypes) => {
-    if (!parsedColumns.target || !parsedColumns?.sensitive) {
+    if (!parsedColumns?.target || !parsedColumns?.sensitiveAttributes) {
         handleFailure({
             reason: `Invalid Column Input: Missing target or sensitive columns: ${parsedColumns}}`
         })
@@ -48,7 +48,7 @@ const saveConfigs = async (
         }
         properties.set('target_column.target_column_name', parsedColumns.target)
 
-        if (parsedColumns?.sensitive) {
+        if (parsedColumns?.sensitiveAttributes) {
             //TODO Change this with proper config fromm the pipeline
         }
         properties.set('dataset_path.data_path', `datasets/${fileName}`)

@@ -10,5 +10,6 @@ export type UploadS3Types = {
 
 export type ParsedColumnTypes = {
     target: string
-    sensitive?: boolean | null
+    sensitiveAttributes?: string
+    bias?: boolean
 }
