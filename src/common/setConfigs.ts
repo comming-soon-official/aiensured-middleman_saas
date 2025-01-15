@@ -27,10 +27,14 @@ const validateGpaiPipeline = (parsedColumns: ParsedColumnTypes) => {
             parsedColumns
         )
         handleFailure({
-            reason: `Invalid Column Input: Missing target or sensitive columns: ${parsedColumns}}`
+            reason: `Invalid Column Input: Missing target or sensitive columns: ${JSON.stringify(
+                parsedColumns
+            )}`
         })
         throw new Error(
-            `Invalid Column Input: Missing target or sensitive columns: ${parsedColumns}}`
+            `Invalid Column Input: Missing target or sensitive columns: ${JSON.stringify(
+                parsedColumns
+            )}`
         )
     }
     console.log('GPAI pipeline validation successful')
@@ -103,8 +107,19 @@ export const setConfigs = async ({
     console.log('Column input received:', colInput)
 
     try {
-        let parsedColumns: ParsedColumnTypes =
-            typeof colInput === 'string' ? JSON.parse(colInput) : colInput
+        // Handle potential double-stringified JSON
+        let parsedColumns: ParsedColumnTypes
+        try {
+            const firstParse = JSON.parse(colInput)
+            parsedColumns =
+                typeof firstParse === 'string'
+                    ? JSON.parse(firstParse)
+                    : firstParse
+        } catch (parseError) {
+            console.error('JSON parsing error:', parseError)
+            throw new Error(`Invalid column input format: ${colInput}`)
+        }
+
         console.log('Parsed columns:', parsedColumns)
 
         console.log('Validating pipeline type:', pipeline)
