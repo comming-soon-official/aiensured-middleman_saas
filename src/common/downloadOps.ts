@@ -6,27 +6,19 @@ import { settingStore } from '../store'
 import { executeCommand } from './executables'
 import { DownloadModelTypes } from './types'
 
-export const downloadModel = async ({
-    url,
-    pipeline,
-    app
-}: DownloadModelTypes) => {
-    console.log('⬇️ Starting model download:', { url, pipeline, app })
+export const downloadModel = async ({ url, pipeline }: DownloadModelTypes) => {
+    console.log('⬇️ Starting model download:', { url, pipeline })
     const filename = path.basename(url)
     const fileExtension = path.extname(filename)
     const staticFilename = `model${fileExtension}`
     let targetFolder: string
 
-    if (app === 'saas') {
-        switch (pipeline) {
-            case 'image':
-                targetFolder = './Results/Model'
-                break
-            default:
-                targetFolder = './results/model_paths'
-        }
-    } else {
-        targetFolder = './results/model_paths'
+    switch (pipeline) {
+        case 'image':
+            targetFolder = './Results/Model'
+            break
+        default:
+            targetFolder = './results/model_paths'
     }
 
     try {

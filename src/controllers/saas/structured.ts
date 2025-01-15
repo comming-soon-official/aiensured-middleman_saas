@@ -4,6 +4,7 @@ import { chdir } from 'process'
 import { downloadDataset, downloadModel } from '../../common/downloadOps'
 import { RunPipeline } from '../../common/executables'
 import { setConfigs } from '../../common/setConfigs'
+import { isValidUrl } from '../../common/utils/urlChecker'
 import { PIPELINE_PATH } from '../../constant/paths'
 import { handleFailure } from '../../services/api-actions'
 import { StructuredPipelineTypes } from './types'
@@ -21,10 +22,25 @@ export const runStructured = async (req: Request, res: Response) => {
 
         // Validate pipeline type
         if (pipeline !== 'structured') {
-            console.warn('❌ Invalid pipeline type received:', pipeline)
+            handleFailure({
+                reason: `❌ Invalid pipeline type received expected structured but got ${pipeline}`
+            })
+            console.warn(
+                `❌ Invalid pipeline type received expected structured but got ${pipeline}`
+            )
             return res.status(400).json({
                 success: false,
                 message: 'Invalid pipeline type. Expected "structured"'
+            })
+        }
+
+        if (!isValidUrl(dataset) || !isValidUrl(model)) {
+            handleFailure({
+                reason: `Invalid dataset or model URL:- dataset:${dataset} or model:${model}`
+            })
+            return res.status(400).json({
+                success: false,
+                message: `Invalid dataset or model URL:- dataset:${dataset} or model:${model}`
             })
         }
 
@@ -43,7 +59,7 @@ export const runStructured = async (req: Request, res: Response) => {
         console.log('✅ Configurations set successfully')
 
         console.log('⏳ Starting model download...')
-        await downloadModel({ url: model, pipeline, app: 'saas' })
+        await downloadModel({ url: model, pipeline })
         console.log('✅ Model download completed')
 
         console.log('🔄 Executing pipeline...')

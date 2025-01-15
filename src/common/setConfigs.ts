@@ -1,34 +1,64 @@
+import fs from 'fs'
 import PropertiesReader from 'properties-reader'
 
 import { handleFailure } from '../services/api-actions'
 import { getStore } from '../store'
+import { ParsedColumnTypes } from './types'
 
-const validateStructuredPipeline = (colInput: string) => {
-    if (!colInput) {
-        throw new Error(`Invalid Column Input: ${colInput}`)
+const validateStructuredPipeline = (parsedColumns: ParsedColumnTypes) => {
+    if (!parsedColumns.target) {
+        handleFailure({
+            reason: `Invalid Column Input: Missing target ${parsedColumns}`
+        })
+        throw new Error(`Invalid Column Input: ${parsedColumns}`)
     }
 }
 
-const validateGpaiPipeline = (parsedColumns: any) => {
-    if (!parsedColumns?.target || !parsedColumns?.sensitive) {
+const validateGpaiPipeline = (parsedColumns: ParsedColumnTypes) => {
+    if (!parsedColumns.target || !parsedColumns?.sensitive) {
+        handleFailure({
+            reason: `Invalid Column Input: Missing target or sensitive columns: ${parsedColumns}}`
+        })
         throw new Error(
             `Invalid Column Input: Missing target or sensitive columns`
         )
     }
 }
 
-const saveConfigs = async (colInput: string, fileName: string) => {
-    const configFilePath = 'config/master_config.properties'
-    const properties = PropertiesReader(configFilePath)
+const saveConfigs = async (
+    parsedColumns: ParsedColumnTypes,
+    fileName: string
+) => {
+    try {
+        const configFilePath = 'config/master_config.properties'
+        if (!fs.existsSync(configFilePath)) {
+            handleFailure({
+                reason: `Configuration file not found: ${configFilePath}`
+            })
+            throw new Error(`Configuration file not found: ${configFilePath}`)
+        }
 
-    if (!properties) {
-        throw new Error('Failed to load configuration file')
+        const properties = PropertiesReader(configFilePath)
+
+        if (!properties) {
+            handleFailure({
+                reason: `Failed to load configuration file`
+            })
+            throw new Error('Failed to load configuration file')
+        }
+        properties.set('target_column.target_column_name', parsedColumns.target)
+
+        if (parsedColumns?.sensitive) {
+            //TODO Change this with proper config fromm the pipeline
+        }
+        properties.set('dataset_path.data_path', `datasets/${fileName}`)
+        await properties.save(configFilePath)
+        console.log('Config is set successfully')
+        return true
+    } catch (error) {
+        console.error('Error while setting up Config:', error)
+        throw error
     }
-
-    properties.set('target_column.target_column_name', colInput)
-    properties.set('dataset_path.data_path', `datasets/${fileName}`)
-    await properties.save(configFilePath)
-    console.log('config is settled')
 }
 
 export const setConfigs = async ({
@@ -36,32 +66,36 @@ export const setConfigs = async ({
     colInput,
     app
 }: {
-    pipeline: string
+    pipeline: 'structured' | 'gpai'
     colInput: string
     app: 'gpai' | 'saas'
 }) => {
     try {
-        const parsedColumns =
+        let parsedColumns: ParsedColumnTypes =
             typeof colInput === 'string' ? JSON.parse(colInput) : colInput
 
         // Validate based on pipeline type
-        if (pipeline == 'structured') {
-            if ((app = 'gpai')) {
-                validateGpaiPipeline(colInput)
-            } else {
-                validateStructuredPipeline(colInput)
-            }
+        if (pipeline === 'gpai') {
+            validateGpaiPipeline(parsedColumns)
+        } else if (pipeline === 'structured') {
+            validateStructuredPipeline(parsedColumns)
+        } else {
+            throw new Error('Invalid pipeline type')
         }
+
         // Save configurations
         const fileName = getStore('fileName')
         if (!fileName) {
             throw new Error('fileName is not defined in store')
         }
-        await saveConfigs(colInput, fileName)
+        await saveConfigs(parsedColumns, fileName)
     } catch (error) {
-        console.error('Error on Configuring', error)
+        const errorMessage =
+            error instanceof Error ? error.message : String(error)
+        console.error('Error on Configuring:', errorMessage)
         await handleFailure({
-            reason: `Error in Setting Up configs: ${error}`
+            reason: `Error in Setting Up configs: ${errorMessage}`
         })
+        throw error
     }
 }

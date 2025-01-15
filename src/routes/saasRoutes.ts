@@ -3,17 +3,20 @@ import express, { Request, Response } from 'express'
 import { runImage } from '../controllers/saas/image'
 import { runObject } from '../controllers/saas/object'
 import { runStructured } from '../controllers/saas/structured'
+import { handleFailure } from '../services/api-actions'
 import { settingStore } from '../store'
 
 const router = express.Router()
 
-// router.get('/', (req: Request, res: Response) => {
-//     res.json({ message: 'Welcome to the API' })
-// })
+router.get('/', (req: Request, res: Response) => {
+    res.json({ message: 'Welcome to the Saas API' })
+})
 
-router.post('/', (req: Request, res: Response) => {
+router.post('/run', (req: Request, res: Response) => {
     console.log('📥 Received request:', { body: req.body, path: req.path })
+
     const { pipeline, projectId, userId, instanceId, ipAddress } = req.body
+
     console.log('💾 Setting store with:', {
         projectId,
         userId,
@@ -38,12 +41,27 @@ router.post('/', (req: Request, res: Response) => {
     if (!ipAddress) {
         missing_data.push('ipAddress')
     }
-
+    if (!pipeline) {
+        missing_data.push('pipeline')
+    }
     if (missing_data.length > 0) {
-        res.status(400).send(
-            `Missing required parameters: ${missing_data.join(', ')}`
-        )
-        return
+        if (projectId && userId) {
+            handleFailure({
+                reason: `Missing required parameters: ${missing_data.join(
+                    ', '
+                )}`
+            })
+        }
+        return res
+            .status(400)
+            .send(`Missing required parameters: ${missing_data.join(', ')}`)
+    }
+
+    if (!['image', 'structured', 'object'].includes(pipeline)) {
+        return res.status(400).json({
+            success: false,
+            message: 'Invalid pipeline type'
+        })
     }
 
     settingStore({
@@ -53,6 +71,7 @@ router.post('/', (req: Request, res: Response) => {
         ipAddress,
         credits: 2
     })
+
     try {
         console.log(`🚀 Starting ${pipeline} pipeline`)
         switch (pipeline) {
@@ -62,11 +81,6 @@ router.post('/', (req: Request, res: Response) => {
                 return runStructured(req, res)
             case 'object':
                 return runObject(req, res)
-            default:
-                return res.status(400).json({
-                    success: false,
-                    message: 'Invalid pipeline type'
-                })
         }
     } catch (error) {
         console.error('❌ Pipeline execution failed:', error)

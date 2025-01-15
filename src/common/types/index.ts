@@ -1,10 +1,14 @@
 export type DownloadModelTypes = {
-  app?: "saas" | "gpai";
-  url: string;
-  pipeline: "image" | "structured";
-};
+    url: string
+    pipeline: 'image' | 'structured' | 'gpai'
+}
 
 export type UploadS3Types = {
-  app?: "saas" | "gpai";
-  pipeline: "image" | "structured";
-};
+    app?: 'saas' | 'gpai'
+    pipeline: 'image' | 'structured' | 'gpai'
+}
+
+export type ParsedColumnTypes = {
+    target: string
+    sensitive?: boolean | null
+}

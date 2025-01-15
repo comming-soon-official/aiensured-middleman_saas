@@ -34,7 +34,7 @@ export const sendFailedStatus = async ({ reason }: { reason: string }) => {
 
     try {
         const response = await axios.post(
-            `${API_URL_HEAD}/parse/functions/save_status`,
+            `${API_URL_HEAD}/parse/functions/save-status`,
             data,
             {
                 headers: {
@@ -62,7 +62,7 @@ export const sendSuccessStatus = async (uuid: string) => {
 
     try {
         const response = await axios.post(
-            `${API_URL_HEAD}/parse/functions/save_status`,
+            `${API_URL_HEAD}/parse/functions/save-status`,
             data,
             {
                 headers: {
@@ -81,30 +81,30 @@ export const sendSuccessStatus = async (uuid: string) => {
     }
 }
 
-export const liveLogsTrigger = async () => {
-    const data = {
-        projectId: getStore('projectId'),
-        ipAddress: getStore('ipAddress')
-    }
+// export const liveLogsTrigger = async () => {
+//     const data = {
+//         projectId: getStore('projectId'),
+//         ipAddress: getStore('ipAddress')
+//     }
 
-    try {
-        const response = await axios.post(
-            `${API_URL_HEAD}/parse/functions/get_logs`,
-            data,
-            {
-                headers: {
-                    'X-Parse-Application-Id': 'myAppId',
-                    'X-Parse-REST-API-Key': 'REST_API_KEY',
-                    'Content-Type': 'application/json'
-                }
-            }
-        )
-        console.log('Run API Response from LiveLogsTrigger:', response.data)
-    } catch (error) {
-        console.error('Error sending success status:', error)
-        // Handle the error appropriately
-    }
-}
+//     try {
+//         const response = await axios.post(
+//             `${API_URL_HEAD}/parse/functions/get_logs`,
+//             data,
+//             {
+//                 headers: {
+//                     'X-Parse-Application-Id': 'myAppId',
+//                     'X-Parse-REST-API-Key': 'REST_API_KEY',
+//                     'Content-Type': 'application/json'
+//                 }
+//             }
+//         )
+//         console.log('Run API Response from LiveLogsTrigger:', response.data)
+//     } catch (error) {
+//         console.error('Error sending success status:', error)
+//         // Handle the error appropriately
+//     }
+// }
 
 export const reduceCredits = async () => {
     const data = {

@@ -6,6 +6,7 @@ import { chdir } from 'process'
 
 import { downloadModel } from '../../common/downloadOps'
 import { RunPipeline } from '../../common/executables'
+import { isValidUrl } from '../../common/utils/urlChecker'
 import { PIPELINE_PATH } from '../../constant/paths'
 import { handleFailure } from '../../services/api-actions'
 import { ImagePipelineTypes } from './types'
@@ -17,12 +18,24 @@ export const runImage = async (req: Request, res: Response) => {
 
         // Validate pipeline type
         if (pipeline !== 'image') {
+            handleFailure({
+                reason: `❌ Invalid pipeline type received expected image but got ${pipeline}`
+            })
             return res.status(400).json({
                 success: false,
                 message: 'Invalid pipeline type. Expected "image"'
             })
         }
 
+        if (!isValidUrl(dataset) || !isValidUrl(model)) {
+            handleFailure({
+                reason: `Invalid dataset or model URL:- dataset:${dataset} or model:${model}`
+            })
+            return res.status(400).json({
+                success: false,
+                message: `Invalid dataset or model URL:- dataset:${dataset} or model:${model}`
+            })
+        }
         //Changing to Pipelines Directory
         console.log('📂 Changing directory to:', PIPELINE_PATH)
         chdir(PIPELINE_PATH)
@@ -31,7 +44,7 @@ export const runImage = async (req: Request, res: Response) => {
         console.log('⬇️ Starting dataset download')
         await downloadImageDataset({ dataset })
         console.log('⬇️ Starting model download')
-        await downloadModel({ url: model, pipeline, app: 'saas' })
+        await downloadModel({ url: model, pipeline })
 
         console.log('▶️ Executing pipeline')
         await RunPipeline({ pipeline })
@@ -112,21 +125,32 @@ export const downloadImageDataset = async ({
         await handleFailure({
             reason: `Error in downloadAndUnzipDataset: ${error}`
         })
-        throw new Error(`Invalid JSON format: ${error}`)
+        throw new Error(`Error on Download Dataset: ${error}`)
     }
 }
 
-export const createLabelFile = (labels: string[]) => {
+export const createLabelFile = async (labels: string[]) => {
     try {
         const content = labels
             .map((label: string, index: number) => `${index + 1} ${label}`)
             .join('\n')
 
+        const modelFolder = `./Results/Model/`
+
+        if (!fs.existsSync(modelFolder)) {
+            fs.mkdirSync(modelFolder)
+            console.log(`created ${modelFolder} folder `)
+        }
+
         fs.writeFileSync('./Results/Model/labels.txt', content)
 
         console.log('File created and data written successfully!')
     } catch (error) {
-        console.error('An error occurred:', error)
+        console.log(`Error in Creating Labels: ${error}`)
+        await handleFailure({
+            reason: `Error in Creating Labels: ${error}`
+        })
+        throw new Error(`Error in Creating Labels: ${error}`)
     }
 }
 
