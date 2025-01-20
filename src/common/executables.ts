@@ -63,11 +63,13 @@ export const RunPipeline = async ({
         attachProcessHandlers(child)
 
         const successCallback = async () => {
+            //use exist file function alternaative insted to check file
             await fs.promises.access(config.jsonPath, fs.constants.F_OK)
             await uploadToS3({ pipeline, app })
         }
 
-        return createProcessPromise(child, successCallback)
+        const res = await createProcessPromise(child, successCallback)
+        return res
     } catch (error) {
         handleFailure({ reason: `'Error in RunPipeline: ${error}` })
         console.error('Error in RunPipeline:', error)

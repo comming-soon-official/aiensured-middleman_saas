@@ -13,6 +13,7 @@ import { UploadS3Types } from './types'
 export const uploadToS3 = async ({ pipeline }: UploadS3Types) => {
     try {
         const { sourceFolder, destPath, uuid } = getUploadPaths(pipeline)
+        //use archaive npm library insted of using commnd injection
         await zipResults({ sourceFolder })
         await uploadResults({ sourceFolder, destPath, uuid })
         return true
@@ -26,14 +27,10 @@ export const uploadToS3 = async ({ pipeline }: UploadS3Types) => {
 }
 
 const getUploadPaths = (pipeline: 'image' | 'structured' | 'gpai') => {
-    const sourceFolder = `${PIPELINE_PATH}/${(() => {
-        switch (pipeline) {
-            case 'image':
-                return 'Results'
-            default:
-                return 'results'
-        }
-    })()}`
+    const targetObj: Record<string, string> = {
+        image: 'Results'
+    }
+    const sourceFolder = `${PIPELINE_PATH}/${targetObj[pipeline] || 'results'}`
     const bucketName = 'saasproduct/Results'
     const uuid = uuidV4()
     const destPath = `s3://${bucketName}/${uuid}`

@@ -4,6 +4,7 @@ type OutputType = 'stdout' | 'stderr'
 type ProcessHandler = (data: string, type: OutputType) => void
 
 export const createChildProcess = (command: string) => {
+    //use spawn insted of exec
     return exec(command)
 }
 

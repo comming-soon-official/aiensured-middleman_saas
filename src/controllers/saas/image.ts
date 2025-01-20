@@ -1,7 +1,6 @@
-//Download Dataset Operations
-import { execSync } from 'child_process'
 import { Request, Response } from 'express'
 import fs from 'fs'
+import { writeFile } from 'fs/promises'
 import { chdir } from 'process'
 
 import { downloadModel } from '../../common/downloadOps'
@@ -17,15 +16,6 @@ export const runImage = async (req: Request, res: Response) => {
         const { dataset, pipeline, model } = req.body as ImagePipelineTypes
 
         // Validate pipeline type
-        if (pipeline !== 'image') {
-            handleFailure({
-                reason: `❌ Invalid pipeline type received expected image but got ${pipeline}`
-            })
-            return res.status(400).json({
-                success: false,
-                message: 'Invalid pipeline type. Expected "image"'
-            })
-        }
 
         if (!isValidUrl(dataset) || !isValidUrl(model)) {
             handleFailure({
@@ -86,6 +76,7 @@ export const downloadImageDataset = async ({
             fs.mkdirSync(destPath, { recursive: true })
             console.log(`created parent directory ${destPath}`)
         }
+        // create folders 1st then doenload images dont nest the loops
         for (const [className, classData] of Object.entries(ObjectDataset) as [
             string,
             Dataset[string]
@@ -96,27 +87,59 @@ export const downloadImageDataset = async ({
                 fs.mkdirSync(classFolder)
                 console.log(`created ${className} folder `)
             }
+            //harish kuamr code
+            const promises = classData.Uris.map(async (imageUrl) => {
+                const imageName = imageUrl.split('/').pop()
+                if (!imageName) {
+                    throw new Error(
+                        'Invalid image URL - cannot extract filename'
+                    )
+                }
 
-            for (const imageUrl of classData.Uris) {
+                const imagePath = `${classFolder}/${imageName}`
+
                 try {
-                    const imageName = imageUrl.split('/').pop()
-                    const imagePath = `${classFolder}/${imageName}`
+                    const response = await fetch(imageUrl)
+                    if (!response.ok) {
+                        throw new Error(
+                            `Failed to fetch image: ${response.statusText}`
+                        )
+                    }
 
-                    execSync(`curl -o "${imagePath}" "${imageUrl}"`)
+                    const arrayBuffer = await response.arrayBuffer()
+                    const buffer = Buffer.from(arrayBuffer)
+
+                    await writeFile(imagePath, buffer)
                     console.log(
-                        `Downloaded and saved ${imageName} for ${className}`
+                        `Successfully downloaded and saved image to ${imagePath}`
                     )
                 } catch (error) {
-                    if (error instanceof Error) {
-                        console.error(
-                            `Error downloading image from ${imageUrl}:`,
-                            error instanceof Error ? error.message : error
-                        )
-                    } else {
-                        console.error('An unknown error occurred:', error)
-                    }
+                    console.error('Error downloading/saving image:', error)
                 }
-            }
+            })
+
+            await Promise.all(promises)
+
+            // for (const imageUrl of classData.Uris) {
+            //     try {
+            //         const imageName = imageUrl.split('/').pop()
+            //         const imagePath = `${classFolder}/${imageName}`
+
+            //         execSync(`curl -o "${imagePath}" "${imageUrl}"`)
+            //         console.log(
+            //             `Downloaded and saved ${imageName} for ${className}`
+            //         )
+            //     } catch (error) {
+            //         if (error instanceof Error) {
+            //             console.error(
+            //                 `Error downloading image from ${imageUrl}:`,
+            //                 error instanceof Error ? error.message : error
+            //             )
+            //         } else {
+            //             console.error('An unknown error occurred:', error)
+            //         }
+            //     }
+            // }
         }
         createLabelFile(Object.keys(ObjectDataset))
     } catch (error) {
@@ -136,7 +159,7 @@ export const createLabelFile = async (labels: string[]) => {
             .join('\n')
 
         const modelFolder = `./Results/Model/`
-
+        //use async don't use sync much
         if (!fs.existsSync(modelFolder)) {
             fs.mkdirSync(modelFolder)
             console.log(`created ${modelFolder} folder `)

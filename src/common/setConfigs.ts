@@ -128,7 +128,10 @@ export const setConfigs = async ({
         } else if (pipeline === 'structured') {
             validateStructuredPipeline(parsedColumns)
         } else {
-            console.error('Invalid pipeline type received:', pipeline)
+            console.error(
+                '[setConfigs]:Invalid pipeline type received:',
+                pipeline
+            )
             throw new Error('Invalid pipeline type')
         }
 

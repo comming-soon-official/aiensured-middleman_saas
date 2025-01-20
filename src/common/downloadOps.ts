@@ -7,19 +7,24 @@ import { executeCommand } from './executables'
 import { DownloadModelTypes } from './types'
 
 export const downloadModel = async ({ url, pipeline }: DownloadModelTypes) => {
+    // use same method as image dataset
     console.log('⬇️ Starting model download:', { url, pipeline })
     const filename = path.basename(url)
     const fileExtension = path.extname(filename)
     const staticFilename = `model${fileExtension}`
-    let targetFolder: string
 
-    switch (pipeline) {
-        case 'image':
-            targetFolder = './Results/Model'
-            break
-        default:
-            targetFolder = './results/model_paths'
+    const targetObj: Record<string, string> = {
+        image: './Results/Model'
     }
+    let targetFolder = targetObj[pipeline as string] || './results/model_paths'
+
+    // switch (pipeline) {
+    //     case 'image':
+    //         targetFolder = './Results/Model'
+    //         break
+    //     default:
+    //         targetFolder = './results/model_paths'
+    // }
 
     try {
         console.log(`📁 Creating directory: ${targetFolder}`)
