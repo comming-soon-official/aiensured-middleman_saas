@@ -54,6 +54,10 @@ export const runGpai = async (req: Request, res: Response) => {
         await downloadDataset({ url: dataset })
         console.log('Dataset download completed')
 
+        console.log('Initiating model download from:', model)
+        await downloadModel({ url: model, pipeline: 'gpai' })
+        console.log('Model download completed')
+
         console.log('Setting pipeline configurations...')
         await setConfigs({
             pipeline: 'gpai',
@@ -61,10 +65,6 @@ export const runGpai = async (req: Request, res: Response) => {
             app: 'gpai'
         })
         console.log('Pipeline configurations set successfully')
-
-        console.log('Initiating model download from:', model)
-        await downloadModel({ url: model, pipeline: 'gpai' })
-        console.log('Model download completed')
 
         console.log('Starting pipeline execution...')
         await RunPipeline({ pipeline: 'gpai', app })

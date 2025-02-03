@@ -11,6 +11,8 @@ export const downloadModel = async ({ url, pipeline }: DownloadModelTypes) => {
     const filename = path.basename(url)
     const fileExtension = path.extname(filename)
     const staticFilename = `model${fileExtension}`
+    settingStore({ modelName: staticFilename })
+
     let targetFolder: string
 
     switch (pipeline) {
@@ -18,7 +20,7 @@ export const downloadModel = async ({ url, pipeline }: DownloadModelTypes) => {
             targetFolder = './Results/Model'
             break
         default:
-            targetFolder = './results/model_paths'
+            targetFolder = './datasets'
     }
 
     try {
@@ -48,7 +50,7 @@ export const downloadDataset = async ({ url }: { url: string }) => {
 
     try {
         console.log('📁 Creating dataset directory')
-        settingStore({ fileName: staticFilename })
+        settingStore({ datasetName: staticFilename })
         if (!fs.existsSync(targetFolder)) {
             fs.mkdirSync(targetFolder, { recursive: true })
         }

@@ -13,6 +13,7 @@ import {
     createChildProcess,
     createProcessPromise
 } from './processHandler'
+import { checkFileExists } from './utils/urlChecker'
 
 export const executeCommand = async (command: string) => {
     return new Promise((resolve, reject) => {
@@ -63,11 +64,20 @@ export const RunPipeline = async ({
         attachProcessHandlers(child)
 
         const successCallback = async () => {
-            await fs.promises.access(config.jsonPath, fs.constants.F_OK)
-            await uploadToS3({ pipeline, app })
+            const res = await checkFileExists(config.jsonPath)
+            if (res) {
+                await uploadToS3({ pipeline, app })
+            }
         }
 
-        return createProcessPromise(child, successCallback)
+        const errorCallBack = async () => {
+            const res = await checkFileExists(config.jsonPath)
+            if (res) {
+                await uploadToS3({ pipeline, app })
+            }
+        }
+
+        return createProcessPromise(child, successCallback, errorCallBack)
     } catch (error) {
         handleFailure({ reason: `'Error in RunPipeline: ${error}` })
         console.error('Error in RunPipeline:', error)

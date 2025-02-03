@@ -21,7 +21,12 @@ const validateStructuredPipeline = (parsedColumns: ParsedColumnTypes) => {
 
 const validateGpaiPipeline = (parsedColumns: ParsedColumnTypes) => {
     console.log('Validating GPAI pipeline with columns:', parsedColumns)
-    if (!parsedColumns?.target || !parsedColumns?.sensitiveAttributes) {
+    if (
+        !parsedColumns.target ||
+        !parsedColumns.sensitiveAttributes ||
+        parsedColumns.sensitiveAttributes.length < 0 ||
+        !parsedColumns.threshold
+    ) {
         console.error(
             'GPAI pipeline validation failed: Missing required columns',
             parsedColumns
@@ -42,11 +47,12 @@ const validateGpaiPipeline = (parsedColumns: ParsedColumnTypes) => {
 
 const saveConfigs = async (
     parsedColumns: ParsedColumnTypes,
-    fileName: string
+    datasetName: string,
+    modelName: string
 ) => {
     console.log('Starting config save operation:', {
         parsedColumns,
-        fileName
+        datasetName
     })
     try {
         const configFilePath = 'config/master_config.properties'
@@ -76,13 +82,26 @@ const saveConfigs = async (
 
         console.log('Setting target column:', parsedColumns.target)
         properties.set('target_column.target_column_name', parsedColumns.target)
-
-        if (parsedColumns?.sensitiveAttributes) {
+        if (
+            Array.isArray(parsedColumns.sensitiveAttributes) &&
+            parsedColumns.sensitiveAttributes.length > 0
+        ) {
             //TODO Change this with proper config fromm the pipeline
+            properties.set(
+                'sensitive_features.senstive_columns',
+                parsedColumns.sensitiveAttributes
+            )
         }
 
-        console.log('Setting dataset path:', `datasets/${fileName}`)
-        properties.set('dataset_path.data_path', `datasets/${fileName}`)
+        if (parsedColumns.threshold) {
+            properties.set('parameters.threshold', parsedColumns.threshold)
+        }
+        console.log('Setting dataset path:', `datasets/${datasetName}`)
+        //setting dataset
+        properties.set('dataset_path.data_path', `datasets/${datasetName}`)
+
+        //setting model
+        properties.set('post_processing.model_path', `datasets/${modelName}`)
 
         console.log('Saving configuration to file')
         await properties.save(configFilePath)
@@ -132,16 +151,17 @@ export const setConfigs = async ({
             throw new Error('Invalid pipeline type')
         }
 
-        const fileName = getStore('fileName')
-        console.log('Retrieved filename from store:', fileName)
+        const datasetName = getStore('datasetName')
+        const modelName = getStore('modelName')
+        console.log('Retrieved filename from store:', datasetName)
 
-        if (!fileName) {
+        if (!datasetName || !modelName) {
             console.error('Filename not found in store')
-            throw new Error('fileName is not defined in store')
+            throw new Error('datasetName is not defined in store')
         }
 
         console.log('Proceeding to save configurations')
-        await saveConfigs(parsedColumns, fileName)
+        await saveConfigs(parsedColumns, datasetName, modelName)
         console.log('setConfigs completed successfully')
     } catch (error) {
         const errorMessage =

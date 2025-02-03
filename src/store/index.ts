@@ -4,7 +4,8 @@ type GlobalStore = {
     instanceId?: string
     credits?: number
     ipAddress?: string
-    fileName?: string
+    datasetName?: string
+    modelName?: string
 }
 
 const store: GlobalStore = {}
@@ -34,5 +35,6 @@ export const settingStore = (storeData: GlobalStore) => {
     if (storeData.userId) setStore('userId', storeData.userId)
     if (storeData.credits) setStore('credits', storeData.credits)
     if (storeData.ipAddress) setStore('ipAddress', storeData.ipAddress)
-    if (storeData.fileName) setStore('fileName', storeData.fileName)
+    if (storeData.datasetName) setStore('datasetName', storeData.datasetName)
+    if (storeData.modelName) setStore('modelName', storeData.modelName)
 }
