@@ -10,6 +10,6 @@ export type UploadS3Types = {
 
 export type ParsedColumnTypes = {
     target: string
-    sensitiveAttributes?: string
-    threshold?: string
+    sensitiveAttributes: string
+    threshold: number
 }

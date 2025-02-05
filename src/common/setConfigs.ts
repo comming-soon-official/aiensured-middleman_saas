@@ -23,21 +23,21 @@ const validateGpaiPipeline = (parsedColumns: ParsedColumnTypes) => {
     console.log('Validating GPAI pipeline with columns:', parsedColumns)
     if (
         !parsedColumns.target ||
-        !parsedColumns.sensitiveAttributes ||
-        parsedColumns.sensitiveAttributes.length < 0 ||
-        !parsedColumns.threshold
+        !Array.isArray(parsedColumns.sensitiveAttributes) ||
+        parsedColumns.sensitiveAttributes.length === 0 ||
+        typeof parsedColumns.threshold !== 'number'
     ) {
         console.error(
-            'GPAI pipeline validation failed: Missing required columns',
+            'GPAI pipeline validation failed: Missing or invalid required columns',
             parsedColumns
         )
         handleFailure({
-            reason: `Invalid Column Input: Missing target or sensitive columns: ${JSON.stringify(
+            reason: `Invalid Column Input: Missing target, sensitive columns, or invalid threshold: ${JSON.stringify(
                 parsedColumns
             )}`
         })
         throw new Error(
-            `Invalid Column Input: Missing target or sensitive columns: ${JSON.stringify(
+            `Invalid Column Input: Missing target, sensitive columns, or invalid threshold: ${JSON.stringify(
                 parsedColumns
             )}`
         )
@@ -93,7 +93,7 @@ const saveConfigs = async (
             )
         }
 
-        if (parsedColumns.threshold) {
+        if (typeof parsedColumns.threshold === 'number') {
             properties.set('parameters.threshold', parsedColumns.threshold)
         }
         console.log('Setting dataset path:', `datasets/${datasetName}`)
