@@ -86,10 +86,13 @@ const saveConfigs = async (
             Array.isArray(parsedColumns.sensitiveAttributes) &&
             parsedColumns.sensitiveAttributes.length > 0
         ) {
-            //TODO Change this with proper config fromm the pipeline
+            // Format sensitive columns as JSON string array
+            const sensitiveColumnsStr = JSON.stringify(
+                parsedColumns.sensitiveAttributes
+            )
             properties.set(
                 'sensitive_features.senstive_columns',
-                `[${parsedColumns.sensitiveAttributes}]`
+                sensitiveColumnsStr
             )
         }
 
