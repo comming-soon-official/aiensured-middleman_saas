@@ -89,7 +89,7 @@ const saveConfigs = async (
             //TODO Change this with proper config fromm the pipeline
             properties.set(
                 'sensitive_features.senstive_columns',
-                parsedColumns.sensitiveAttributes
+                `[${parsedColumns.sensitiveAttributes}]`
             )
         }
 
